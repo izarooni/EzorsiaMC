@@ -1,0 +1,4 @@
+name: Ezorsia
+version: '${project.version}'
+main: com.izarooni.Ezorsia
+api-version: '1.21'

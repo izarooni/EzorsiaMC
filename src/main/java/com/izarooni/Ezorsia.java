@@ -1,6 +1,7 @@
 package com.izarooni;
 
 import com.izarooni.events.BlockHandler;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,6 +10,10 @@ public final class Ezorsia extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // create config files
+        saveResource("config.yml", false);
+        saveResource("veins.yml", false);
+
         getServer().getPluginManager().registerEvents(new BlockHandler(this), this);
         Component message = Component.text("Ezorsia : Aaaand we back!").color(TextColor.color(0x00FF00));
 

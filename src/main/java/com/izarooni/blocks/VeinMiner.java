@@ -1,36 +1,60 @@
 package com.izarooni.blocks;
 
+import com.izarooni.Ezorsia;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class VeinMiner {
-    public static void onBlockBreak(Player player, Material material, Location location) {
+
+    private final List<Material> Ores = new ArrayList<>(25);
+    private final List<Material> Logs = new ArrayList<>(25);
+
+    public VeinMiner(Ezorsia ezorsia) {
+        File config = new File(ezorsia.getDataFolder(), "veins.yml");
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(config);
+
+        yaml.getStringList("ores").forEach(material -> Ores.add(Material.getMaterial(material)));
+        yaml.getStringList("logs").forEach(material -> Logs.add(Material.getMaterial(material)));
+    }
+
+    public void onBlockBreak(Player player, Material material, Location location) {
         ItemStack item = player.getInventory().getItemInMainHand();
         Material tool = item.getType();
         ItemMeta meta = item.getItemMeta();
         if (!(meta instanceof Damageable)) return;
 
-        if (isOreMaterial(material)) {
+        if (Ores.contains(material)) {
             if (isPickaxeMaterial(tool)) {
                 destroyVein(player, material, location);
             }
-        } else if (isLogMaterial(material)) {
+        } else if (Logs.contains(material)) {
             if (isAxeMaterial(tool)) {
                 destroyVein(player, material, location);
             }
         }
     }
 
-    private static void destroyVein(Player player, Material material, Location location) {
+    private void destroyVein(Player player, Material material, Location location) {
+        destroyVein(player, material, location, new HashSet<>());
+    }
+
+    private void destroyVein(final Player player, final Material material, Location location, HashSet<Location> processed) {
+        if (processed.contains(location)) return;
+        processed.add(location);
+
         ItemStack item = player.getInventory().getItemInMainHand();
         ItemMeta meta = item.getItemMeta();
 
@@ -39,81 +63,17 @@ public class VeinMiner {
 
         for (BlockFace face : RelativeFaces) {
             Location next = location.clone().add(face.getDirection());
-            Material nextMaterial = next.getBlock().getType();
+            Block block = next.getBlock();
+
+            Material nextMaterial = block.getType();
             if (nextMaterial == material) {
-                next.getBlock().breakNaturally(item);
-                destroyVein(player, material, next);
+                block.breakNaturally(item);
+                destroyVein(player, material, next, processed);
             }
         }
     }
 
-    private static final BlockFace[] RelativeFaces = new BlockFace[]{
-            BlockFace.UP,
-            BlockFace.DOWN,
-
-            BlockFace.NORTH,
-            BlockFace.NORTH_EAST,
-            BlockFace.NORTH_WEST,
-            BlockFace.NORTH_NORTH_EAST,
-            BlockFace.NORTH_NORTH_WEST,
-
-            BlockFace.EAST,
-            BlockFace.EAST_NORTH_EAST,
-            BlockFace.EAST_SOUTH_EAST,
-
-            BlockFace.SOUTH,
-            BlockFace.SOUTH_EAST,
-            BlockFace.SOUTH_WEST,
-            BlockFace.SOUTH_SOUTH_EAST,
-            BlockFace.SOUTH_SOUTH_WEST,
-
-            BlockFace.WEST,
-            BlockFace.WEST_NORTH_WEST,
-            BlockFace.WEST_SOUTH_WEST,
-    };
-
-    private static final List<Material> Ores = new ArrayList<>(Arrays.asList(
-            Material.COAL_ORE,
-            Material.IRON_ORE,
-            Material.GOLD_ORE,
-            Material.REDSTONE_ORE,
-            Material.LAPIS_ORE,
-            Material.DIAMOND_ORE,
-            Material.EMERALD_ORE,
-            Material.NETHER_QUARTZ_ORE,
-            Material.ANCIENT_DEBRIS,
-            Material.COPPER_ORE,
-
-            Material.DEEPSLATE_COAL_ORE,
-            Material.DEEPSLATE_IRON_ORE,
-            Material.DEEPSLATE_GOLD_ORE,
-            Material.DEEPSLATE_REDSTONE_ORE,
-            Material.DEEPSLATE_LAPIS_ORE,
-            Material.DEEPSLATE_DIAMOND_ORE,
-            Material.DEEPSLATE_EMERALD_ORE,
-            Material.DEEPSLATE_COPPER_ORE
-    ));
-
-    private static final List<Material> Logs = new ArrayList<>(Arrays.asList(
-            Material.OAK_LOG,
-            Material.SPRUCE_LOG,
-            Material.BIRCH_LOG,
-            Material.JUNGLE_LOG,
-            Material.ACACIA_LOG,
-            Material.DARK_OAK_LOG,
-            Material.CHERRY_LOG,
-            Material.MANGROVE_LOG,
-
-            // stripped
-            Material.STRIPPED_OAK_LOG,
-            Material.STRIPPED_SPRUCE_LOG,
-            Material.STRIPPED_BIRCH_LOG,
-            Material.STRIPPED_JUNGLE_LOG,
-            Material.STRIPPED_ACACIA_LOG,
-            Material.STRIPPED_DARK_OAK_LOG,
-            Material.STRIPPED_CHERRY_LOG,
-            Material.STRIPPED_MANGROVE_LOG
-    ));
+    private static final BlockFace[] RelativeFaces = BlockFace.values();
 
     private static final List<Material> Axes = new ArrayList<>(Arrays.asList(
             Material.WOODEN_AXE,
@@ -132,14 +92,6 @@ public class VeinMiner {
             Material.DIAMOND_PICKAXE,
             Material.NETHERITE_PICKAXE
     ));
-
-    private static boolean isOreMaterial(Material material) {
-        return Ores.contains(material);
-    }
-
-    private static boolean isLogMaterial(Material material) {
-        return Logs.contains(material);
-    }
 
     private static boolean isAxeMaterial(Material material) {
         return Axes.contains(material);

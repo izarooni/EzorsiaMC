@@ -11,8 +11,12 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 public class BlockHandler extends PluginEventHandler {
 
+    private final VeinMiner veinMiner;
+
     public BlockHandler(Ezorsia ezorsia) {
         super(ezorsia);
+
+        veinMiner = new VeinMiner(ezorsia);
     }
 
     @EventHandler
@@ -22,6 +26,8 @@ public class BlockHandler extends PluginEventHandler {
         Material material = block.getType();
         Location location = block.getLocation();
 
-        VeinMiner.onBlockBreak(player, material, location);
+        if (!player.isSneaking()) {
+            veinMiner.onBlockBreak(player, material, location);
+        }
     }
 }

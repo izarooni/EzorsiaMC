@@ -1,6 +1,7 @@
 package com.izarooni.blocks;
 
 import com.izarooni.Ezorsia;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,6 +29,9 @@ public class VeinMiner {
 
         yaml.getStringList("ores").forEach(material -> Ores.add(Material.getMaterial(material)));
         yaml.getStringList("logs").forEach(material -> Logs.add(Material.getMaterial(material)));
+
+        Component message = Component.text("VeinMiner is enabled for " + Ores.size() + " ores and " + Logs.size() + " logs");
+        ezorsia.getServer().getConsoleSender().sendMessage(message);
     }
 
     public void onBlockBreak(Player player, Material material, Location location) {

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class VeinMiner extends PluginEventHandler  {
+public class VeinMiner extends PluginEventHandler {
 
     private static final List<Material> Ores = new ArrayList<>(25);
     private static final List<Material> Logs = new ArrayList<>(25);
@@ -44,44 +44,45 @@ public class VeinMiner extends PluginEventHandler  {
     }
 
     public void onBlockBreak(Player player, Material material, Location location) {
-        ItemStack item = player.getInventory().getItemInMainHand();
-        Material tool = item.getType();
-        ItemMeta meta = item.getItemMeta();
-        if (!(meta instanceof Damageable)) return;
-
-        if (Ores.contains(material)) {
-            if (isPickaxeMaterial(tool)) {
-                destroyVein(player, material, location);
-            }
-        } else if (Logs.contains(material)) {
-            if (isAxeMaterial(tool)) {
-                destroyVein(player, material, location);
-            }
+        if (Ores.contains(material) || Logs.contains(material)) {
+            destroyVein(player, material, location, new HashSet<>(50));
         }
-    }
-
-    private void destroyVein(Player player, Material material, Location location) {
-        destroyVein(player, material, location, new HashSet<>());
     }
 
     private void destroyVein(final Player player, final Material material, Location location, HashSet<Location> processed) {
         if (processed.contains(location)) return;
-        processed.add(location);
+
+        Block targetBlock = location.getBlock();
+        Material targetMaterial = targetBlock.getType();
+        if (targetMaterial != material) return;
 
         ItemStack item = player.getInventory().getItemInMainHand();
-        ItemMeta meta = item.getItemMeta();
+        if (Logs.contains(material) && !isAxeMaterial(item.getType())) return;
+        if (Ores.contains(material) && !isPickaxeMaterial(item.getType())) return;
 
-        Damageable damageable = (Damageable) meta;
-        damageable.setDamage(damageable.getDamage() + 1);
+        ItemMeta meta = item.getItemMeta();
+        if (meta instanceof Damageable) {
+            Damageable damageable = (Damageable) meta;
+            int damage = damageable.getDamage();
+            if (damage >= item.getType().getMaxDurability()) {
+                player.sendMessage(Component.text("Your tool is broken").color(TextColor.color(0xFF0000)));
+                return;
+            }
+            damageable.setDamage(damage + 1);
+            item.setItemMeta(meta);
+        }
+
+        targetBlock.breakNaturally(item, true, true);
+        processed.add(location);
 
         for (BlockFace face : RelativeFaces) {
-            Location next = location.clone().add(face.getDirection());
-            Block block = next.getBlock();
+            if (face == BlockFace.SELF) continue;
 
-            Material nextMaterial = block.getType();
-            if (nextMaterial == material) {
-                block.breakNaturally(item);
-                destroyVein(player, material, next, processed);
+            Location relative = location.clone().add(face.getModX(), face.getModY(), face.getModZ());
+            Block relativeBlock = relative.getBlock();
+            Material relativeMaterial = relativeBlock.getType();
+            if (relativeMaterial == material) {
+                destroyVein(player, material, relative, processed);
             }
         }
     }

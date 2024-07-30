@@ -1,6 +1,7 @@
 package com.izarooni.blocks;
 
 import com.izarooni.Ezorsia;
+import com.izarooni.events.PluginEventHandler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
@@ -19,12 +20,17 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class VeinMiner {
+public class VeinMiner extends PluginEventHandler  {
 
-    private final List<Material> Ores = new ArrayList<>(25);
-    private final List<Material> Logs = new ArrayList<>(25);
+    private static final List<Material> Ores = new ArrayList<>(25);
+    private static final List<Material> Logs = new ArrayList<>(25);
 
     public VeinMiner(Ezorsia ezorsia) {
+        super(ezorsia);
+        reload(ezorsia);
+    }
+
+    public static void reload(Ezorsia ezorsia) {
         File config = new File(ezorsia.getDataFolder(), "veins.yml");
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(config);
 

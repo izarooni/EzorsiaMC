@@ -10,15 +10,23 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.plugin.Plugin;
 
 public class CommandHandler {
-    public static void initialize(Ezorsia ezorsia) {
+    public static void initialize(final Ezorsia ezorsia) {
         LifecycleEventManager<Plugin> manager = ezorsia.getLifecycleManager();
-        manager.registerEventHandler(LifecycleEvents.COMMANDS, CommandHandler::registerCommands);
+        manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            registerCommands(ezorsia, event);
+        });
 
         Component message = Component.text("Ezorsia : Commands registered").color(TextColor.color(0x00FF00));
         ezorsia.getServer().getConsoleSender().sendMessage(message);
     }
 
-    private static void registerCommands(ReloadableRegistrarEvent<Commands> event) {
+    private static void registerCommands(Ezorsia ezorsia, ReloadableRegistrarEvent<Commands> event) {
         Commands commands = event.registrar();
+
+        commands.register(
+                "reload",
+                "Reloads the plugin configuration",
+                new ReloadCommand(ezorsia)
+        );
     }
 }

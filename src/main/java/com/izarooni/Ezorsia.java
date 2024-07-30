@@ -27,7 +27,9 @@ public final class Ezorsia extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockHandler(this), this);
         getServer().getPluginManager().registerEvents(new PlayerHandler(this), this);
 
-        Component message = Component.text("Ezorsia : Aaaand we back!").color(TextColor.color(0x00FF00));
+        Component message = Component
+                .text("Ezorsia : Aaaand we back!")
+                .color(TextColor.color(0x00FF00));
         getServer().getConsoleSender().sendMessage(message);
     }
 
@@ -37,7 +39,9 @@ public final class Ezorsia extends JavaPlugin {
             user.save(this);
         }
 
-        Component message = Component.text("Ezorsia : Later!").color(TextColor.color(0xFF0000));
+        Component message = Component
+                .text("Ezorsia : Later!")
+                .color(TextColor.color(0xFF0000));
         getServer().getConsoleSender().sendMessage(message);
     }
 

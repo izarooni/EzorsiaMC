@@ -2,6 +2,7 @@ package com.izarooni.blocks;
 
 import com.izarooni.Ezorsia;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -30,7 +31,9 @@ public class VeinMiner {
         yaml.getStringList("ores").forEach(material -> Ores.add(Material.getMaterial(material)));
         yaml.getStringList("logs").forEach(material -> Logs.add(Material.getMaterial(material)));
 
-        Component message = Component.text("VeinMiner is enabled for " + Ores.size() + " ores and " + Logs.size() + " logs");
+        Component message = Component
+                .text(String.format("VeinMiner is enabled for %d ores and %d logs", Ores.size(), Logs.size()))
+                .color(TextColor.color(0x00FF00));
         ezorsia.getServer().getConsoleSender().sendMessage(message);
     }
 
